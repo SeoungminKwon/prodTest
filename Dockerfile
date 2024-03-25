@@ -1,4 +1,6 @@
-FROM ghcr.io/graalvm/graalvm-community:21
+# 첫 번째 스테이지: 빌드 스테이지
+# as builder는 이 스테이지에 이름을 부여하여 나중에 다른 스테이지로 복사시 참조할 수 있게 한다.
+FROM ghcr.io/graalvm/graalvm-community:21 as builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -16,13 +18,17 @@ RUN chmod +x ./gradlew
 # 애플리케이션 빌드
 RUN ./gradlew clean build
 
-#jar파일을 다른 곳으로 이동
-RUN mv build/libs/*.jar /app.jar
 
-# 현재 폴더에서 app.jar 빼고 전부 제거
-RUN rm -rf *
-# 다른 곳으로 이동시킨 jar파일을 다시 갖고 오기
-RUN mv /app.jar /app/app.jar
+# -----------------------------------------------------------
+
+# 두 번째 스테이지: 실행 스테이지
+FROM ghcr.io/graalvm/graalvm-community:21
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 첫 번째 스테이지에서 빌드된 JAR 파일 복사
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 # 실행할 JAR 파일 지정
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
