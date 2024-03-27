@@ -16,6 +16,7 @@ RUN chmod +x ./gradlew
 # 종속성 설치
 # 이 단계에서 변경사항이 없다면, 다음 빌드에서 캐시됩니다.
 RUN ./gradlew dependencies --no-daemon
+#??
 
 
 # ========== dependencies에 변경이 없는 이상 이 부분 까지는 매번 캐싱 =============
